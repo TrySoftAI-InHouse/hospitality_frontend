@@ -5,7 +5,6 @@ import {
   Star, 
   CreditCard, 
   Gift,
-  ShoppingCart 
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useCart } from '../../hooks/useCart';
