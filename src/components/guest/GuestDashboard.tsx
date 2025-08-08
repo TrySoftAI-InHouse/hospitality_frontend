@@ -52,7 +52,7 @@ export function GuestDashboard() {
   // Mock user data
   const currentUser = {
     id: 'user-123',
-    firstName: 'Alex',
+    firstName: 'John Doe',
     membershipTier: 'Gold',
   };
 

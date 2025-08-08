@@ -2,6 +2,12 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "target": "ES2016",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "paths": {
       "@/*": ["src/*"],
       "@types/*": ["src/types/*"]

@@ -51,7 +51,7 @@ const mockBookings: Booking[] = [
       id: '101',
       number: '101',
       type: 'Deluxe King',
-      images: ['https://source.unsplash.com/random/300x200/?hotel,room'],
+      images: ['https://plus.unsplash.com/premium_photo-1661884238187-1c274b3c3413?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       amenities: ['Free WiFi', 'Air Conditioning', 'Mini Bar'],
       pricePerNight: 300
     },
@@ -71,7 +71,7 @@ const mockBookings: Booking[] = [
       id: '202',
       number: '202',
       type: 'Standard Queen',
-      images: ['https://source.unsplash.com/random/300x200/?hotel,room,standard'],
+      images: ['https://plus.unsplash.com/premium_photo-1688125414656-ab91164cbd1e?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       amenities: ['Free WiFi', 'Coffee Maker'],
       pricePerNight: 250
     },
@@ -91,7 +91,7 @@ const mockBookings: Booking[] = [
       id: '301',
       number: '301',
       type: 'Executive Suite',
-      images: ['https://source.unsplash.com/random/300x200/?hotel,suite'],
+      images: ['https://plus.unsplash.com/premium_photo-1688125414656-ab91164cbd1e?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       amenities: ['Free WiFi', 'Jacuzzi', 'Balcony', 'Mini Bar'],
       pricePerNight: 600
     },
@@ -111,7 +111,7 @@ const mockBookings: Booking[] = [
       id: '401',
       number: '401',
       type: 'Family Suite',
-      images: ['https://source.unsplash.com/random/300x200/?hotel,family'],
+      images: ['https://plus.unsplash.com/premium_photo-1688125414656-ab91164cbd1e?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       amenities: ['Free WiFi', 'Kitchenette', 'Sofa Bed'],
       pricePerNight: 600
     },

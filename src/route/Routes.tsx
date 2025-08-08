@@ -1,24 +1,24 @@
 import { createBrowserRouter } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
-import { LoginPage } from '../pages/auth/LoginPage';
-import  RegisterPage  from '../pages/auth/RegisterPage';
-import { DashboardPage } from '../pages/guest/DashboardPage';
-import { BookingSearchPage } from '../pages/booking/BookingSearchPage';
-import { RoomResultsPage } from '../pages/booking/RoomResultsPage';
-import { BookingFormPage } from '../pages/booking/BookingFormPage';
-import { BookingConfirmationPage } from '../pages/booking/BookingConfirmationPage';
-import { FoodMenuPage } from '../pages/food/FoodMenuPage';
-import { FoodCartPage } from '../pages/food/FoodCartPage';
-import { FoodOrderConfirmationPage } from '../pages/food/FoodOrderConfirmationPage';
-import { MyBookingsPage } from '../pages/guest/MyBookingsPage';
-import { FeedbackPage } from '../pages/guest/FeedbackPage';
-import { RewardsPage } from '../pages/guest/RewardsPage';
+import { LoginPage } from '../pages/Auth/LoginPage';
+import  RegisterPage  from '../pages/Auth/RegisterPage';
+import { DashboardPage } from '../pages/Guest/DashboardPage';
+import { BookingSearchPage } from '../pages/Booking/BookingSearchPage';
+import { RoomResultsPage } from '../pages/Booking/RoomResultsPage';
+import { BookingFormPage } from '../pages/Booking/BookingFormPage';
+import { BookingConfirmationPage } from '../pages/Booking/BookingConfirmationPage';
+import { FoodMenuPage } from '../pages/Food/FoodMenuPage';
+import { FoodCartPage } from '../pages/Food/FoodCartPage';
+import { FoodOrderConfirmationPage } from '../pages/Food/FoodOrderConfirmationPage';
+import { MyBookingsPage } from '../pages/Guest/MyBookingsPage';
+import { FeedbackPage } from '../pages/Guest/FeedbackPage';
+import { RewardsPage } from '../pages/Guest/RewardsPage';
 import  {AdminDashboard}  from '../pages/Admin/AdminDashboard.jsx';
 import { ProtectedRoute } from './ProtectedRoute';
 import { GuestApp } from '../app/GuestApp';
 import { AdminApp } from '../app/AdminApp';
 import { RootApp } from '../app/RootApp';
-
+import { CheckoutPage } from '../pages/CheckoutPage';
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -35,6 +35,9 @@ export const router = createBrowserRouter([
       {
         path: 'register',
         element: <RegisterPage />,
+      },{
+          path: 'booking/checkout',
+        element: <CheckoutPage />,
       },
       {
         path: 'admin',
@@ -49,6 +52,15 @@ export const router = createBrowserRouter([
               },
             ],
           },
+        ],
+      },
+      {
+        path: 'guest',
+        children: [
+          { index: true, element: <BookingSearchPage /> },
+          { path: 'results', element: <RoomResultsPage /> },
+          { path: 'checkout', element: <CheckoutPage /> },
+          // ... other booking routes ...
         ],
       },
       {
@@ -69,6 +81,7 @@ export const router = createBrowserRouter([
                   { path: 'results', element: <RoomResultsPage /> },
                   { path: 'form', element: <BookingFormPage /> },
                   { path: 'confirmation', element: <BookingConfirmationPage /> },
+                  { path: 'checkout', element: <CheckoutPage  /> },
                 ],
               },
               {
@@ -88,4 +101,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  
 ]);

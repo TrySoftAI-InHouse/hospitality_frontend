@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle,
+  CardFooter
+} from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Badge } from '../ui/badge';
@@ -16,19 +28,25 @@ import {
   Calendar,
   Filter,
   Search,
-  Camera,
   Loader2,
   User,
   Smile,
   Frown,
-  Meh
+  Meh,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
-import { Feedback, FeedbackCategory } from '../../types/guest.types';
-import { guestService } from '../../services/guestService';
-import { authService } from '../../services/authService';
+import { authService } from '../../services/authService'; // Add this import
+import { guestService } from '../../services/guestService'
 import { Skeleton } from '../ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { Progress } from '../ui/progress';
+import { Separator } from '../ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { cn } from '../../lib/utils';
 
 export function FeedbackSystem() {
   const [feedbackCategories, setFeedbackCategories] = useState<FeedbackCategory[]>([]);
@@ -38,6 +56,7 @@ export function FeedbackSystem() {
   const [activeTab, setActiveTab] = useState('submit');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
   
   // Form state
   const [rating, setRating] = useState(0);
@@ -57,6 +76,7 @@ export function FeedbackSystem() {
     if (!currentUser) return;
 
     try {
+      setLoading(true);
       const [categoriesData, feedbackData] = await Promise.all([
         guestService.getFeedbackCategories(),
         guestService.getGuestFeedback(currentUser.id)
@@ -105,18 +125,17 @@ export function FeedbackSystem() {
       await loadFeedbackData();
       
       setActiveTab('history');
-      showToast('Thank you for your feedback! We appreciate your input.', 'success');
+      showToast('Thank you for your feedback!', 'success');
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      showToast('Failed to submit feedback. Please try again.', 'error');
+      showToast('Failed to submit feedback', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
-    // In a real app, you would use a toast library here
-    alert(`${type.toUpperCase()}: ${message}`);
+  const toggleFeedbackExpansion = (id: string) => {
+    setExpandedFeedback(expandedFeedback === id ? null : id);
   };
 
   const renderStarRating = (currentRating: number, onRate?: (rating: number) => void, onHover?: (rating: number) => void) => {
@@ -126,16 +145,21 @@ export function FeedbackSystem() {
           <TooltipProvider key={starNumber}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Star
-                  className={`h-6 w-6 cursor-pointer transition-all ${
-                    starNumber <= (hoveredRating || currentRating)
-                      ? 'fill-yellow-400 text-yellow-400 hover:scale-110'
-                      : 'text-gray-300 hover:text-yellow-300'
-                  }`}
+                <button
+                  type="button"
+                  className="focus:outline-none"
                   onClick={() => onRate?.(starNumber)}
                   onMouseEnter={() => onHover?.(starNumber)}
                   onMouseLeave={() => onHover?.(0)}
-                />
+                >
+                  <Star
+                    className={`h-6 w-6 transition-all ${
+                      starNumber <= (hoveredRating || currentRating)
+                        ? 'fill-yellow-400 text-yellow-400 hover:scale-110'
+                        : 'text-gray-300 hover:text-yellow-300'
+                    }`}
+                  />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 {starNumber === 1 ? 'Poor' : 
@@ -150,19 +174,36 @@ export function FeedbackSystem() {
     );
   };
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'Pending': return 'secondary';
-      case 'Reviewed': return 'default';
-      case 'Resolved': return 'outline';
-      default: return 'secondary';
+      case 'Reviewed':
+        return (
+          <Badge variant="default" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Reviewed
+          </Badge>
+        );
+      case 'Resolved':
+        return (
+          <Badge variant="secondary" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Resolved
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
     }
   };
 
   const getEmojiForRating = (rating: number) => {
-    if (rating >= 4) return <Smile className="h-4 w-4" />;
-    if (rating >= 3) return <Meh className="h-4 w-4" />;
-    return <Frown className="h-4 w-4" />;
+    if (rating >= 4) return <Smile className="h-5 w-5 text-green-500" />;
+    if (rating >= 3) return <Meh className="h-5 w-5 text-yellow-500" />;
+    return <Frown className="h-5 w-5 text-red-500" />;
   };
 
   const filteredFeedback = myFeedback.filter(feedback => {
@@ -172,24 +213,25 @@ export function FeedbackSystem() {
     return matchesSearch && matchesCategory;
   });
 
-  const feedbackStats = {
-    averageRating: myFeedback.length > 0 
-      ? (myFeedback.reduce((sum, fb) => sum + fb.rating, 0) / myFeedback.length).toFixed(1)
-      : '0.0',
-    ratingDistribution: [1, 2, 3, 4, 5].map(star => ({
-      star,
-      count: myFeedback.filter(fb => fb.rating === star).length,
-      percentage: myFeedback.length > 0 
-        ? (myFeedback.filter(fb => fb.rating === star).length / myFeedback.length) * 100
-        : 0
-    }))
-  };
+const feedbackStats = {
+  averageRating: myFeedback.length > 0 
+    ? myFeedback.reduce((sum, fb) => sum + fb.rating, 0) / myFeedback.length
+    : 0,
+  ratingDistribution: [1, 2, 3, 4, 5].map(star => ({
+    star,
+    count: myFeedback.filter(fb => fb.rating === star).length,
+    percentage: myFeedback.length > 0 
+      ? (myFeedback.filter(fb => fb.rating === star).length / myFeedback.length) * 100
+      : 0
+  }))
+};
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
           <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
         </div>
         
         <Tabs defaultValue="submit" className="w-full">
@@ -202,7 +244,7 @@ export function FeedbackSystem() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
+                  <Skeleton className="h-5 w-5 rounded-full" />
                   <Skeleton className="h-6 w-48" />
                 </CardTitle>
               </CardHeader>
@@ -224,66 +266,45 @@ export function FeedbackSystem() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Feedback & Reviews</h2>
-          <p className="text-sm text-muted-foreground">
-            Share your experience and view your feedback history
-          </p>
-        </div>
-        {activeTab === 'history' && myFeedback.length > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search feedback..."
-                className="pl-9 w-[200px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[180px]">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <SelectValue placeholder="Filter by category" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
-                {feedbackCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight">Feedback Center</h1>
+        <p className="text-sm text-muted-foreground">
+          Share your experience and help us improve our services
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="submit">Submit Feedback</TabsTrigger>
-          <TabsTrigger value="history">
-            My Feedback {myFeedback.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {myFeedback.length}
-              </Badge>
-            )}
+        <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+          <TabsTrigger value="submit" className="data-[state=active]:bg-background">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Submit Feedback
+          </TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-background">
+            <div className="flex items-center gap-2">
+              <span>My Feedback</span>
+              {myFeedback.length > 0 && (
+                <Badge variant="secondary" className="h-5 px-1.5 py-0">
+                  {myFeedback.length}
+                </Badge>
+              )}
+            </div>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="submit" className="space-y-6">
-          <Card className="border-none shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-lg flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
                 Share Your Experience
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmitFeedback} className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Overall Rating *</Label>
+              <form onSubmit={handleSubmitFeedback} className="space-y-6 pt-4">
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-1">
+                    Overall Rating <span className="text-destructive">*</span>
+                  </Label>
                   <div className="flex items-center gap-4">
                     {renderStarRating(rating, setRating, setHoveredRating)}
                     <div className="flex items-center gap-2">
@@ -300,11 +321,13 @@ export function FeedbackSystem() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-1">
+                    Category <span className="text-destructive">*</span>
+                  </Label>
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select feedback category" />
+                      <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
                       {feedbackCategories.map((cat) => (
@@ -319,20 +342,20 @@ export function FeedbackSystem() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
+                <div className="space-y-3">
+                  <Label>Title (Optional)</Label>
                   <Input
-                    id="title"
                     placeholder="Brief summary of your feedback"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="comment">Comments *</Label>
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-1">
+                    Detailed Feedback <span className="text-destructive">*</span>
+                  </Label>
                   <Textarea
-                    id="comment"
                     placeholder="Please share your detailed feedback..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
@@ -340,12 +363,25 @@ export function FeedbackSystem() {
                     className="min-h-[120px]"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 30 characters (currently {comment.length})
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      {comment.length < 30 ? (
+                        <span className="text-destructive">
+                          Minimum 30 characters required ({30 - comment.length} more)
+                        </span>
+                      ) : (
+                        <span className="text-green-500">
+                          Minimum length satisfied
+                        </span>
+                      )}
+                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      {comment.length}/500
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <input
                     type="checkbox"
                     id="anonymous"
@@ -355,22 +391,37 @@ export function FeedbackSystem() {
                   />
                   <Label htmlFor="anonymous" className="text-sm">
                     Submit anonymously
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your name won't be shown with this feedback
+                    </p>
                   </Label>
                 </div>
 
-                <Alert className="bg-blue-50 border-blue-200">
-                  <ThumbsUp className="h-4 w-4 text-blue-600" />
-                  <AlertTitle className="text-blue-800">Your opinion matters</AlertTitle>
+                <Alert variant="default" className="bg-blue-50 border-blue-200">
+                  <ThumbsUp className="h-5 w-5 text-blue-600" />
+                  <AlertTitle className="text-blue-800">We value your feedback</AlertTitle>
                   <AlertDescription className="text-blue-700">
-                    We value your feedback and use it to improve our services. Thank you for taking the time to share your experience!
+                    Your honest opinions help us improve our services for everyone.
                   </AlertDescription>
                 </Alert>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      setRating(0);
+                      setCategory('');
+                      setTitle('');
+                      setComment('');
+                    }}
+                  >
+                    Clear
+                  </Button>
                   <Button 
                     type="submit" 
                     disabled={submitting || rating === 0 || !comment.trim() || comment.length < 30}
-                    className="min-w-[180px]"
+                    className="min-w-[180px] shadow-sm"
                   >
                     {submitting ? (
                       <>
@@ -391,113 +442,224 @@ export function FeedbackSystem() {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+            <div className="flex-1 w-full sm:w-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search your feedback..."
+                  className="pl-9 w-full sm:w-[280px]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 w-full sm:w-auto">
+             
+             {/* // In your FeedbackSystem component, update the Select components like this: */}
+
+{/* Category Select */}
+<Select 
+  value={category} 
+  onValueChange={(value) => setCategory(value)}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Select a category" />
+  </SelectTrigger>
+  <SelectContent>
+    {/* Use a special value for "All Categories" that isn't an empty string */}
+    <SelectItem value="all-categories">
+      All Categories
+    </SelectItem>
+    {feedbackCategories.map((cat) => (
+      <SelectItem key={cat.id} value={cat.id}>
+        <div className="flex items-center gap-2">
+          {cat.icon && React.createElement(cat.icon, { className: "h-4 w-4" })}
+          {cat.name}
+        </div>
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+{/* Filter Select */}
+<Select 
+  value={filterCategory} 
+  onValueChange={(value) => setFilterCategory(value === "all-categories" ? "" : value)}
+>
+  <SelectTrigger className="w-[180px]">
+    <div className="flex items-center gap-2">
+      <Filter className="h-4 w-4" />
+      <SelectValue placeholder="Filter by category" />
+    </div>
+  </SelectTrigger>
+  <SelectContent>
+    {/* Use same special value for consistency */}
+    <SelectItem value="all-categories">
+      All Categories
+    </SelectItem>
+    {feedbackCategories.map((cat) => (
+      <SelectItem key={cat.id} value={cat.id}>
+        {cat.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+            </div>
+          </div>
+
           {filteredFeedback.length > 0 ? (
             <>
-              <Card className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">Total Feedback</h3>
-                    <p className="text-3xl font-bold">{myFeedback.length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-100/50 p-3 rounded-full">
+                      <MessageSquare className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{myFeedback.length}</p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">Average Rating</h3>
-                    <div className="flex items-center gap-2">
-                      <p className="text-3xl font-bold">{feedbackStats.averageRating}</p>
-                      <div className="flex">
-                        {renderStarRating(Math.round(Number(feedbackStats.averageRating)))}
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-yellow-100/50 p-3 rounded-full">
+                      <Star className="h-5 w-5 text-yellow-600 fill-yellow-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Avg. Rating</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold">
+                          {feedbackStats.averageRating.toFixed(1)}
+                        </p>
+                        <div className="flex">
+                          {renderStarRating(Math.round(feedbackStats.averageRating))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">Response Rate</h3>
-                    <p className="text-3xl font-bold">
-                      {myFeedback.filter(f => f.response).length}/{myFeedback.length}
-                    </p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-green-100/50 p-3 rounded-full">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Responded</p>
+                      <p className="text-2xl font-bold">
+                        {myFeedback.filter(f => f.response).length}/{myFeedback.length}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
 
-              <div className="space-y-4">
-                <h3 className="font-medium">Rating Distribution</h3>
-                <div className="space-y-2">
+              <Card className="p-6">
+                <h3 className="font-medium mb-4">Rating Distribution</h3>
+                <div className="space-y-3">
                   {feedbackStats.ratingDistribution.map(({ star, count, percentage }) => (
                     <div key={star} className="flex items-center gap-4">
-                      <div className="flex items-center w-10">
-                        <span className="w-5">{star}</span>
+                      <div className="flex items-center w-12">
+                        <span className="w-5 text-sm">{star}</span>
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       </div>
-                      <Progress value={percentage} className="h-2" />
+                      <div className="flex-1">
+                        <Progress value={percentage} className="h-2" />
+                      </div>
                       <span className="text-sm text-muted-foreground w-10 text-right">
                         {count}
                       </span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {filteredFeedback.map((feedback) => (
-                  <Card key={feedback.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-lg">{feedback.title || 'Feedback'}</h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-2">
-                            <span className="flex items-center gap-1">
-                              {feedback.category.icon && React.createElement(feedback.category.icon, { className: "h-3 w-3" })}
-                              {feedback.category.name}
-                            </span>
-                            • 
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(feedback.createdDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant={getStatusBadgeVariant(feedback.status)}>
-                            {feedback.status}
-                          </Badge>
-                          <div className="flex items-center gap-1">
-                            {renderStarRating(feedback.rating)}
-                            {getEmojiForRating(feedback.rating)}
+                  <Card 
+                    key={feedback.id} 
+                    className="hover:shadow-sm transition-shadow overflow-hidden"
+                  >
+                    <button
+                      className="w-full text-left"
+                      onClick={() => toggleFeedbackExpansion(feedback.id)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <h3 className="font-semibold text-lg line-clamp-1">
+                                {feedback.title || 'Feedback'}
+                              </h3>
+                              {getStatusBadge(feedback.status)}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                {feedback.category.icon && React.createElement(feedback.category.icon, { className: "h-3 w-3" })}
+                                {feedback.category.name}
+                              </span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(feedback.createdDate).toLocaleDateString()}
+                              </span>
+                              {feedback.isAnonymous && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    Anonymous
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              {renderStarRating(feedback.rating)}
+                              {getEmojiForRating(feedback.rating)}
+                            </div>
+                            {expandedFeedback === feedback.id ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm mb-4">{feedback.comment}</p>
+                      </CardHeader>
+                    </button>
+
+                    <CardContent className={cn(
+                      "pt-0 pb-6 transition-all duration-300",
+                      expandedFeedback === feedback.id ? "block" : "hidden"
+                    )}>
+                      <Separator className="mb-4" />
+                      <p className="whitespace-pre-line text-sm mb-6">
+                        {feedback.comment}
+                      </p>
                       
                       {feedback.response && (
                         <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="bg-blue-100 p-1 rounded-full">
-                              <User className="h-4 w-4 text-blue-600" />
+                          <div className="flex items-start gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src="/hotel-logo.png" />
+                              <AvatarFallback>H</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="text-sm font-medium">Hotel Management</p>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(feedback.response.responseDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                {feedback.response.message}
+                              </p>
                             </div>
-                            <p className="text-sm font-medium">Hotel Response</p>
-                            <span className="text-xs text-muted-foreground ml-auto">
-                              {new Date(feedback.response.responseDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </span>
                           </div>
-                          <p className="text-sm text-muted-foreground pl-8">
-                            {feedback.response.message}
-                          </p>
                         </div>
-                      )}
-
-                      {feedback.isAnonymous && (
-                        <Badge variant="outline" className="mt-3">
-                          <User className="h-3 w-3 mr-1" />
-                          Anonymous
-                        </Badge>
                       )}
                     </CardContent>
                   </Card>
@@ -505,7 +667,7 @@ export function FeedbackSystem() {
               </div>
             </>
           ) : (
-            <Card className="text-center">
+            <Card className="text-center border-0 shadow-none">
               <CardContent className="p-8">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                   <MessageSquare className="h-8 w-8 text-muted-foreground" />
@@ -513,12 +675,13 @@ export function FeedbackSystem() {
                 <h3 className="mt-4 text-lg font-semibold">No feedback found</h3>
                 <p className="mt-2 text-muted-foreground">
                   {searchQuery || filterCategory 
-                    ? "Try adjusting your search or filter criteria"
-                    : "Share your experience to help us improve our services."}
+                    ? "No matching feedback found. Try adjusting your search."
+                    : "You haven't submitted any feedback yet."}
                 </p>
                 <Button 
                   onClick={() => setActiveTab('submit')}
                   className="mt-4"
+                  variant="outline"
                 >
                   Submit Your First Feedback
                 </Button>
