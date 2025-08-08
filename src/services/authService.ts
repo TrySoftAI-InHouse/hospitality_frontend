@@ -1,16 +1,65 @@
 import type { LoginCredentials, RegisterData, User } from '../types/auth.types';
 
+
 const demoUsers = {
   admin: {
     id: 'demo-admin-123',
     email: 'admin@example.com',
     firstName: 'Admin',
     lastName: 'User',
-    role: 'admin' as const,
+    role: 'admin',
     phone: '+1234567890',
     avatar: 'https://randomuser.me/api/portraits/lego/1.jpg',
     loyaltyPoints: 0,
     membershipTier: 'Admin',
+    preferences: {}
+  },
+  manager: {
+    id: 'demo-manager-123',
+    email: 'manager@example.com',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
+    role: 'manager',
+    phone: '+1234567891',
+    avatar: 'https://randomuser.me/api/portraits/lego/3.jpg',
+    loyaltyPoints: 0,
+    membershipTier: 'Manager',
+    preferences: {}
+  },
+  receptionist: {
+    id: 'demo-receptionist-123',
+    email: 'receptionist@example.com',
+    firstName: 'Michael',
+    lastName: 'Brown',
+    role: 'receptionist',
+    phone: '+1234567892',
+    avatar: 'https://randomuser.me/api/portraits/lego/4.jpg',
+    loyaltyPoints: 0,
+    membershipTier: 'Staff',
+    preferences: {}
+  },
+  housekeeping: {
+    id: 'demo-housekeeping-123',
+    email: ' @example.com',
+    firstName: 'Maria',
+    lastName: 'Garcia',
+    role: 'housekeeping',
+    phone: '+1234567893',
+    avatar: 'https://randomuser.me/api/portraits/lego/5.jpg',
+    loyaltyPoints: 0,
+    membershipTier: 'Staff',
+    preferences: {}
+  },
+  kitchen: {
+    id: 'demo-kitchen-123',
+    email: 'kitchen@example.com',
+    firstName: 'James',
+    lastName: 'Wilson',
+    role: 'kitchen',
+    phone: '+1234567894',
+    avatar: 'https://randomuser.me/api/portraits/lego/6.jpg',
+    loyaltyPoints: 0,
+    membershipTier: 'Staff',
     preferences: {}
   },
   guest: {
@@ -18,7 +67,7 @@ const demoUsers = {
     email: 'john.doe@example.com',
     firstName: 'John',
     lastName: 'Doe',
-    role: 'guest' as const,
+    role: 'guest',
     phone: '+1234567890',
     avatar: 'https://randomuser.me/api/portraits/lego/2.jpg',
     dateOfBirth: '1990-05-15',
@@ -36,7 +85,6 @@ const demoUsers = {
     }
   }
 };
-
 export class AuthService {
   private static instance: AuthService;
   private currentUser: User | null = null;
@@ -56,8 +104,16 @@ export class AuthService {
     
     let user: User;
     
-    if (credentials.email === demoUsers.admin.email) {
+ if (credentials.email === demoUsers.admin.email) {
       user = demoUsers.admin;
+    } else if (credentials.email === demoUsers.manager.email) {
+      user = demoUsers.manager;
+    } else if (credentials.email === demoUsers.receptionist.email) {
+      user = demoUsers.receptionist;
+    } else if (credentials.email === demoUsers.housekeeping.email) {
+      user = demoUsers.housekeeping;
+    } else if (credentials.email === demoUsers.kitchen.email) {
+      user = demoUsers.kitchen;
     } else if (credentials.email === demoUsers.guest.email) {
       user = demoUsers.guest;
     } else {
