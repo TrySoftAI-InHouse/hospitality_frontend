@@ -18,7 +18,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { GuestApp } from '../app/GuestApp';
 import { AdminApp } from '../app/AdminApp';
 import { RootApp } from '../app/RootApp';
-
+import { CheckoutPage } from '../pages/CheckoutPage';
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -35,6 +35,9 @@ export const router = createBrowserRouter([
       {
         path: 'register',
         element: <RegisterPage />,
+      },{
+          path: 'booking/checkout',
+        element: <CheckoutPage />,
       },
       {
         path: 'admin',
@@ -49,6 +52,15 @@ export const router = createBrowserRouter([
               },
             ],
           },
+        ],
+      },
+      {
+        path: 'guest',
+        children: [
+          { index: true, element: <BookingSearchPage /> },
+          { path: 'results', element: <RoomResultsPage /> },
+          { path: 'checkout', element: <CheckoutPage /> },
+          // ... other booking routes ...
         ],
       },
       {
@@ -69,6 +81,7 @@ export const router = createBrowserRouter([
                   { path: 'results', element: <RoomResultsPage /> },
                   { path: 'form', element: <BookingFormPage /> },
                   { path: 'confirmation', element: <BookingConfirmationPage /> },
+                  { path: 'checkout', element: <CheckoutPage  /> },
                 ],
               },
               {
@@ -88,4 +101,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  
 ]);
